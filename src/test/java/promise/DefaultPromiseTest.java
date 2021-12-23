@@ -29,6 +29,7 @@ public class DefaultPromiseTest {
 		CountDownLatch latch = new CountDownLatch(numListenersBefore + numListenersAfter);
 		DefaultPromise<Void> promise = new DefaultPromise<>();
 
+		//为DefaultPromise实例添加了两个listener
 		for (int i = 0; i < numListenersBefore; i++) {
 			promise.addListener(new FutureListener<Void>() {
 				@Override
@@ -38,6 +39,15 @@ public class DefaultPromiseTest {
 			});
 		}
 
+		/**
+		 * 	之后启动另外一个线程A去设置值（此时就会回调已经加入到当前的DefaultPromise实例中的
+		 * 	两个listener#operationComplete(Future<Void> future)，
+		 * 	然后删除这两个listener，也就是说一个listener只能被通知一遍）
+		 * 	之后线程A又启动了另外的一条线程B为当前的DefaultPromise实例添加了3个listener，
+		 * 	注意，此时每添加一个listener，就会立即回调其operationComplete方法，
+		 * 	因为当前的DefaultPromise.isDone()==true了，就是说当前的DefaultPromise实例已经完成了
+		 *
+		 */
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
