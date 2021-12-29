@@ -75,6 +75,9 @@ public class DefaultPromiseTest {
 	}
 
 
+	/**
+	 * 配合线程池使用
+	 */
 	@Test
 	public void testFastThreadPoolWithPromise() {
 		DefaultPromise<Void> promise = new DefaultPromise<>();
@@ -92,5 +95,45 @@ public class DefaultPromiseTest {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+	/**
+	 * future阻塞get用法
+	 */
+	@Test
+	private void testFutureStyleWithWaitNotifyAll() throws ExecutionException, InterruptedException {
+		Promise<String> promise = new DefaultPromise<>();
+
+		/**
+		 * 一个线程在执行get()，进行wait()
+		 */
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					Object result = promise.get();// 等待条件
+					// 之后做相应的业务逻辑
+					System.out.println(result.toString());
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
+
+		// sleep 2s 使第一个线程先等待着
+		Thread.sleep(2000);
+
+		/**
+		 * 另外一个线程在设置值，notifyAll唤醒wait()线程
+		 */
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				promise.setSuccess(new String("1"));
+			}
+		}).start();
 	}
 }

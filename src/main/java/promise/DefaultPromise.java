@@ -296,21 +296,6 @@ public class DefaultPromise<V> extends AbstractFuture<V> implements Promise<V> {
          * wait内部执行机制：
          * 1、把当前线程放入锁对象的条件等待队列，之后释放锁（注意：一定会释放锁，否则notify的线程将无法获取该对象锁），进入阻塞状态WAITING或TIMED_WAITING
          * 2、当等待时间到了或者被其他线程notify/notifyAll了，则等待的当前线程从条件等待队列中移除出来，之后再尝试获取锁，如果没有获取锁，进入锁等待队列，线程状态改为BLOCKED；如果获取了锁，从wait调用中返回
-         *
-         * 为什么要写成:
-         * <pre>
-         *    while (!isDone()) {
-         *      wait();
-         *    }
-         * </pre>
-         * 而不是
-         * <pre>
-         *     if(!isDone()) {
-         *         wait();
-         *     }
-         * </pre>
-         *
-         * wait()表示阻塞等待，正常情况下while和if形式是等价的，但是为了防止wait()被意外唤醒，所以需要在wait()之后继续进行判断
          */
         synchronized (this) {
             while (!isDone()) {
